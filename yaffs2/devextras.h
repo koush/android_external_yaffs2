@@ -24,6 +24,10 @@
 #ifndef __EXTRAS_H__
 #define __EXTRAS_H__
 
+#ifdef ANDROID
+#include <sys/types.h>
+#endif
+
 #if defined WIN32
 #define __inline__ __inline
 #define new newHack
@@ -32,10 +36,11 @@
 #if !(defined __KERNEL__) || (defined WIN32)
 
 /* User space defines */
-
+#ifndef __ASM_ARM_TYPES_H
 typedef unsigned char __u8;
 typedef unsigned short __u16;
 typedef unsigned __u32;
+#endif 
 
 #if defined(__APPLE__)
 typedef long long loff_t;
