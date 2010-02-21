@@ -62,3 +62,22 @@ LOCAL_MODULE := recovery_mkyaffs2image
 ADDITIONAL_RECOVERY_EXECUTABLES += recovery_mkyaffs2image
 
 include $(BUILD_EXECUTABLE)
+
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := recovery_unyaffs
+LOCAL_MODULE_STEM := unyaffs
+LOCAL_MODULE_CLASS := RECOVERY_EXECUTABLES
+LOCAL_MODULE_TAGS := eng
+LOCAL_FORCE_STATIC_EXECUTABLE := true
+LOCAL_SRC_FILES := yaffs2/utils/unyaffs.c
+LOCAL_STATIC_LIBRARIES := libc libcutils
+LOCAL_MODULE_PATH := $(TARGET_RECOVERY_ROOT_OUT)/sbin
+ADDITIONAL_RECOVERY_EXECUTABLES += recovery_unyaffs
+include $(BUILD_EXECUTABLE)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := unyaffs
+LOCAL_SRC_FILES := yaffs2/utils/unyaffs.c
+LOCAL_MODULE_TAGS := eng
+include $(BUILD_EXECUTABLE)
