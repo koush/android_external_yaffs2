@@ -52,35 +52,35 @@ LOCAL_CFLAGS =   -O2 -Wall -DCONFIG_YAFFS_UTIL -DCONFIG_YAFFS_DOES_ECC
 LOCAL_CFLAGS+=   -Wshadow -Wpointer-arith -Wwrite-strings -Wstrict-prototypes -Wmissing-declarations
 LOCAL_CFLAGS+=   -Wmissing-prototypes -Wredundant-decls -Wnested-externs -Winline
 LOCAL_CFLAGS+=   -DS_IWRITE=0200 -DS_IREAD=0400
-LOCAL_FORCE_STATIC_EXECUTABLE := true
-LOCAL_STATIC_LIBRARIES := libc libcutils
-LOCAL_MODULE_CLASS := RECOVERY_EXECUTABLES
+#LOCAL_FORCE_STATIC_EXECUTABLE := true
+#LOCAL_STATIC_LIBRARIES := libc libcutils
+#LOCAL_MODULE_CLASS := RECOVERY_EXECUTABLES
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/yaffs2
-LOCAL_MODULE_PATH := $(TARGET_RECOVERY_ROOT_OUT)/sbin
-LOCAL_MODULE_STEM := mkyaffs2image
+#LOCAL_MODULE_PATH := $(TARGET_RECOVERY_ROOT_OUT)/sbin
+#LOCAL_MODULE_STEM := mkyaffs2image
 LOCAL_MODULE := recovery_mkyaffs2image
-ADDITIONAL_RECOVERY_EXECUTABLES += recovery_mkyaffs2image
-
-include $(BUILD_EXECUTABLE)
+#ADDITIONAL_RECOVERY_EXECUTABLES += recovery_mkyaffs2image
+LOCAL_CFLAGS += -Dmain=mkyaffs2image_main
+include $(BUILD_STATIC_LIBRARY)
 
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := recovery_unyaffs
-LOCAL_MODULE_STEM := unyaffs
-LOCAL_MODULE_CLASS := RECOVERY_EXECUTABLES
-LOCAL_MODULE_TAGS := eng
-LOCAL_FORCE_STATIC_EXECUTABLE := true
+#LOCAL_MODULE_STEM := unyaffs
+#LOCAL_MODULE_CLASS := RECOVERY_EXECUTABLES
+#LOCAL_MODULE_TAGS := eng
+#LOCAL_FORCE_STATIC_EXECUTABLE := true
 LOCAL_SRC_FILES := yaffs2/utils/unyaffs.c
-LOCAL_STATIC_LIBRARIES := libc libcutils
-LOCAL_MODULE_PATH := $(TARGET_RECOVERY_ROOT_OUT)/sbin
+#LOCAL_STATIC_LIBRARIES := libc libcutils
+#LOCAL_MODULE_PATH := $(TARGET_RECOVERY_ROOT_OUT)/sbin
 LOCAL_CFLAGS =   -O2 -Wall -DCONFIG_YAFFS_UTIL -DCONFIG_YAFFS_DOES_ECC
 LOCAL_CFLAGS+=   -Wshadow -Wpointer-arith -Wwrite-strings -Wstrict-prototypes -Wmissing-declarations
 LOCAL_CFLAGS+=   -Wmissing-prototypes -Wredundant-decls -Wnested-externs -Winline
 LOCAL_CFLAGS+=   -DS_IWRITE=0200 -DS_IREAD=0400
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/yaffs2
-
-ADDITIONAL_RECOVERY_EXECUTABLES += recovery_unyaffs
-include $(BUILD_EXECUTABLE)
+LOCAL_CFLAGS += -Dmain=unyaffs_main
+#ADDITIONAL_RECOVERY_EXECUTABLES += recovery_unyaffs
+include $(BUILD_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := unyaffs
