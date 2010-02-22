@@ -15,7 +15,11 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "unyaffs.h"
+#include "yaffs_ecc.h"
+#include "yaffs_guts.h"
+
+#include "yaffs_tagsvalidity.h"
+#include "yaffs_packedtags2.h"
 
 #define CHUNK_SIZE 2048
 #define SPARE_SIZE 64
@@ -73,6 +77,8 @@ void process_chunk()
 				link(obj_list[oh->equivalentObjectId], full_path_name);
 				break;
 		}
+		chown(full_path_name, oh->yst_uid, oh->yst_gid);
+		chmod(full_path_name, oh->yst_mode);
 	}
 }
 

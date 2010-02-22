@@ -73,6 +73,12 @@ LOCAL_FORCE_STATIC_EXECUTABLE := true
 LOCAL_SRC_FILES := yaffs2/utils/unyaffs.c
 LOCAL_STATIC_LIBRARIES := libc libcutils
 LOCAL_MODULE_PATH := $(TARGET_RECOVERY_ROOT_OUT)/sbin
+LOCAL_CFLAGS =   -O2 -Wall -DCONFIG_YAFFS_UTIL -DCONFIG_YAFFS_DOES_ECC
+LOCAL_CFLAGS+=   -Wshadow -Wpointer-arith -Wwrite-strings -Wstrict-prototypes -Wmissing-declarations
+LOCAL_CFLAGS+=   -Wmissing-prototypes -Wredundant-decls -Wnested-externs -Winline
+LOCAL_CFLAGS+=   -DS_IWRITE=0200 -DS_IREAD=0400
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/yaffs2
+
 ADDITIONAL_RECOVERY_EXECUTABLES += recovery_unyaffs
 include $(BUILD_EXECUTABLE)
 
@@ -80,4 +86,9 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := unyaffs
 LOCAL_SRC_FILES := yaffs2/utils/unyaffs.c
 LOCAL_MODULE_TAGS := eng
+LOCAL_CFLAGS =   -O2 -Wall -DCONFIG_YAFFS_UTIL -DCONFIG_YAFFS_DOES_ECC
+LOCAL_CFLAGS+=   -Wshadow -Wpointer-arith -Wwrite-strings -Wstrict-prototypes -Wmissing-declarations
+LOCAL_CFLAGS+=   -Wmissing-prototypes -Wredundant-decls -Wnested-externs -Winline
+LOCAL_CFLAGS+=   -DS_IWRITE=0200 -DS_IREAD=0400
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/yaffs2
 include $(BUILD_EXECUTABLE)
