@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/time.h>
 
 #include "yaffs_ecc.h"
 #include "yaffs_guts.h"
@@ -79,6 +80,10 @@ void process_chunk()
 		}
 		chown(full_path_name, oh->yst_uid, oh->yst_gid);
 		chmod(full_path_name, oh->yst_mode);
+		struct timeval times[2];
+		times[0].tv_sec = oh->yst_atime;
+		times[1].tv_sec = oh->yst_mtime;
+		utimes(full_path_name, times);
 	}
 }
 
