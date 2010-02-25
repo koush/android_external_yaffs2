@@ -78,8 +78,9 @@ void process_chunk()
 				link(obj_list[oh->equivalentObjectId], full_path_name);
 				break;
 		}
-		chown(full_path_name, oh->yst_uid, oh->yst_gid);
-		chmod(full_path_name, oh->yst_mode);
+		lchown(full_path_name, oh->yst_uid, oh->yst_gid);
+		if (oh->type != YAFFS_OBJECT_TYPE_SYMLINK)
+			chmod(full_path_name, oh->yst_mode);
 		struct timeval times[2];
 		times[0].tv_sec = oh->yst_atime;
 		times[1].tv_sec = oh->yst_mtime;
