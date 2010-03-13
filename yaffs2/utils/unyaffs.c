@@ -15,12 +15,15 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/time.h>
+#include <limits.h>
 
 #include "yaffs_ecc.h"
 #include "yaffs_guts.h"
 
 #include "yaffs_tagsvalidity.h"
 #include "yaffs_packedtags2.h"
+
+#include "unyaffs.h"
 
 #define CHUNK_SIZE 2048
 #define SPARE_SIZE 64
@@ -107,24 +110,40 @@ int read_chunk()
 	return ret;
 }
 
+int unyaffs(char* filename, char* directory, unyaffs_callback callback)
+{
+	img_file = open(filename, O_RDONLY);
+	if (img_file == -1) {
+		printf("open image file failed\n");
+        return 1;
+	}
+
+	obj_list[YAFFS_OBJECTID_ROOT] = ".";
+    int count = 0;
+    char pwd[PATH_MAX];
+    if (directory != NULL) 
+    {
+        getcwd(pwd, PATH_MAX);
+        chdir(directory);
+    }
+	while(1) {
+		if (read_chunk() == -1)
+			break;
+		process_chunk();
+        if (callback != NULL)
+            callback(count++);
+	}
+    if (directory != NULL) 
+        chdir(pwd);
+	close(img_file);
+	return 0;
+}
+
 int main(int argc, char **argv)
 {
 	if (argc != 2) {
 		printf("Usage: unyaffs image_file_name\n");
 		exit(1);
 	}
-	img_file = open(argv[1], O_RDONLY);
-	if (img_file == -1) {
-		printf("open image file failed\n");
-		exit(1);
-	}
-
-	obj_list[YAFFS_OBJECTID_ROOT] = ".";
-	while(1) {
-		if (read_chunk() == -1)
-			break;
-		process_chunk();
-	}
-	close(img_file);
-	return 0;
+    return unyaffs(argv[1], NULL, NULL);
 }
