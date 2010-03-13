@@ -37,7 +37,7 @@ unsigned char *spare_data = data + CHUNK_SIZE;
 int img_file;
 
 char *obj_list[MAX_OBJECTS];
-void process_chunk()
+void process_chunk(unyaffs_callback callback)
 {
 	int out_file, remain, s;
 	char *full_path_name;
@@ -81,6 +81,8 @@ void process_chunk()
 				link(obj_list[oh->equivalentObjectId], full_path_name);
 				break;
 		}
+        if (callback != NULL)
+            callback(full_path_name);
 		lchown(full_path_name, oh->yst_uid, oh->yst_gid);
 		if (oh->type != YAFFS_OBJECT_TYPE_SYMLINK)
 			chmod(full_path_name, oh->yst_mode);
@@ -129,9 +131,7 @@ int unyaffs(char* filename, char* directory, unyaffs_callback callback)
 	while(1) {
 		if (read_chunk() == -1)
 			break;
-		process_chunk();
-        if (callback != NULL)
-            callback(count++);
+		process_chunk(callback);
 	}
     if (directory != NULL) 
         chdir(pwd);

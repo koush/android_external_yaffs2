@@ -345,7 +345,7 @@ static int process_directory(int parent, const char *path, int fixstats, mkyaffs
 				
 					newObj = obj_id++;
 					if (callback != NULL)
-                        callback(newObj);
+                        callback(full_name);
 					//nObjects++;
 
                     if (fixstats) {
