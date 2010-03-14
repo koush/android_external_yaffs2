@@ -465,6 +465,9 @@ int mkyaffs2image(char* target_directory, char* filename, int fixstats, mkyaffs2
     n_obj = 0;
     obj_id = YAFFS_NOBJECT_BUCKETS + 1;
     
+    if (stat(target_directory,&stats) < 0)
+        return -1;
+    
 	outFile = open(filename,O_CREAT | O_TRUNC | O_WRONLY, S_IREAD | S_IWRITE);
 	
 	if(outFile < 0)
