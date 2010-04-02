@@ -325,7 +325,7 @@ static int process_directory(int parent, const char *path, int fixstats, mkyaffs
 			if(strcmp(entry->d_name,".") &&
 			   strcmp(entry->d_name,".."))
  			{
- 				char full_name[500];
+ 				char full_name[PATH_MAX];
 				struct stat stats;
 				int equivalentObj;
 				int newObj;
@@ -369,7 +369,7 @@ static int process_directory(int parent, const char *path, int fixstats, mkyaffs
 						if(S_ISLNK(stats.st_mode))
 						{
 					
-							char symname[500];
+							char symname[PATH_MAX];
 						
 							memset(symname,0, sizeof(symname));
 					
