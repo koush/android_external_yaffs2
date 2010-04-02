@@ -32,6 +32,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <sys/limits.h>
+
 #include <private/android_filesystem_config.h>
 
 #include "yaffs_ecc.h"
