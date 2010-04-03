@@ -32,7 +32,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <linux/limits.h>
+#include <limits.h>
 
 #include <private/android_filesystem_config.h>
 
