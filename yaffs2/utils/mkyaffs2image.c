@@ -497,7 +497,7 @@ int mkyaffs2image(char* target_directory, char* filename, int fixstats, mkyaffs2
 		error = process_directory(YAFFS_OBJECTID_ROOT,target_directory,fixstats,callback);
 	
 	close(outFile);
-	return error < 0;
+	return error < 0 ? error : 0;
 }
 
 static void usage(void)
@@ -571,7 +571,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 	
-    error = mkyaffs2image(argv[1], argv[2], fixstats, NULL);
+	error = mkyaffs2image(dir, image, fixstats, NULL);
 	
 	if(error != 0)
 	{
