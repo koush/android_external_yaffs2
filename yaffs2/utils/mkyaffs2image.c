@@ -49,8 +49,8 @@ unsigned yaffs_traceMask=0;
 
 #define MAX_OBJECTS 50000
 
-#define chunkSize 2048
-#define spareSize 64
+unsigned chunkSize = 2048;
+unsigned spareSize = 64;
 
 const char * mkyaffsimage_c_version = "$Id: mkyaffs2image.c,v 1.2 2005/12/13 00:34:58 tpoynor Exp $";
 
@@ -462,86 +462,112 @@ static int process_directory(int parent, const char *path, int fixstats, mkyaffs
 
 int mkyaffs2image(char* target_directory, char* filename, int fixstats, mkyaffs2image_callback callback)
 {
-    struct stat stats;
-    memset(obj_list, 0, sizeof(objItem) * MAX_OBJECTS);
-    n_obj = 0;
-    obj_id = YAFFS_NOBJECT_BUCKETS + 1;
-    
-    if (stat(target_directory,&stats) < 0)
-        return -1;
-    
+	struct stat stats;
+	memset(obj_list, 0, sizeof(objItem) * MAX_OBJECTS);
+	n_obj = 0;
+	obj_id = YAFFS_NOBJECT_BUCKETS + 1;
+
+	if (stat(target_directory,&stats) < 0)
+		return -1;
+
 	outFile = open(filename,O_CREAT | O_TRUNC | O_WRONLY, S_IREAD | S_IWRITE);
 	
-	if(outFile < 0)
-	{
+	if(outFile < 0) {
 		fprintf(stderr,"Could not open output file %s\n",filename);
-        return -1;
+		return -1;
 	}
 
-    if (fixstats) {
-        int len = strlen(target_directory);
-        
-        if((len >= 4) && (!strcmp(target_directory + len - 4, "data"))) {
-            source_path_len = len - 4;
-        } else if((len >= 7) && (!strcmp(target_directory + len - 6, "system"))) {
-            source_path_len = len - 6;
-        } else {            
-            fprintf(stderr,"Fixstats (-f) option requested but filesystem is not data or android!\n");
-            return -1;
-        }
-        fix_stat(target_directory, &stats);
-    }
-    
+	if (fixstats) {
+		int len = strlen(target_directory);
+
+		if((len >= 4) && (!strcmp(target_directory + len - 4, "data"))) {
+			source_path_len = len - 4;
+		} else if((len >= 7) && (!strcmp(target_directory + len - 6, "system"))) {
+			source_path_len = len - 6;
+		} else {            
+			fprintf(stderr,"Fixstats (-f) option requested but filesystem is not data or android!\n");
+			return -1;
+		}
+		fix_stat(target_directory, &stats);
+	}
+
 	//printf("Processing directory %s into image file %s\n",argv[1],argv[2]);
 	error =  write_object_header(1, YAFFS_OBJECT_TYPE_DIRECTORY, &stats, 1,"", -1, NULL);
 	if(error)
-	    error = process_directory(YAFFS_OBJECTID_ROOT,target_directory,fixstats,callback);
+		error = process_directory(YAFFS_OBJECTID_ROOT,target_directory,fixstats,callback);
 	
 	close(outFile);
-    return error < 0;
+	return error < 0;
+}
+
+static void usage(void)
+{
+	fprintf(stderr,"mkyaffs2image: image building tool for YAFFS2 built "__DATE__"\n");
+	fprintf(stderr,"usage: mkyaffs2image [-f] [-c <size>] [-s <size>] dir image_file [convert]\n");
+	fprintf(stderr,"           -f         fix file stat (mods, user, group) for device\n");
+	fprintf(stderr,"           -c <size>  set the chunk (NAND page) size. default: 2048\n");
+	fprintf(stderr,"           -s <size>  set the spare (NAND OOB) size. default: 64\n");
+	fprintf(stderr,"           dir        the directory tree to be converted\n");
+	fprintf(stderr,"           image_file the output file to hold the image\n");
+	fprintf(stderr,"           'convert'  produce a big-endian image from a little-endian machine\n");
 }
 
 int main(int argc, char *argv[])
 {
-    n_obj = 0;
-    obj_id = YAFFS_NOBJECT_BUCKETS + 1;
-
-    int fixstats = 0;
+	int fixstats = 0;
 	struct stat stats;
-	
-	if (argc > 1) {
-        if (strcmp(argv[1], "-f") == 0) {
-            fixstats = 1;
-            argc--;
-            argv++;
-        }
-    }
+	int opt;
+	char *image;
+	char *dir;
 
-	if(argc < 3)
-	{
-	    fprintf(stderr,"mkyaffs2image: image building tool for YAFFS2 built "__DATE__"\n");
-		fprintf(stderr,"usage: mkyaffs2image [-f] dir image_file [convert]\n");
-        fprintf(stderr,"           -f         fix file stat (mods, user, group) for device\n");
-		fprintf(stderr,"           dir        the directory tree to be converted\n");
-		fprintf(stderr,"           image_file the output file to hold the image\n");
-        fprintf(stderr,"           'convert'  produce a big-endian image from a little-endian machine\n");
+	while ((opt = getopt(argc, argv, "fc:s:")) != -1) {
+		switch (opt) {
+		case 'f':
+			fixstats = 1;
+			break;
+		case 'c':
+			chunkSize = (unsigned)strtoul(optarg, NULL, 0);
+			break;
+		case 's':
+			spareSize = (unsigned)strtoul(optarg, NULL, 0);
+			break;
+		default:
+			usage();
+			exit(1);
+		}
+	}
+
+	if (!chunkSize || !spareSize) {
+		usage();
 		exit(1);
 	}
 
-    if ((argc == 4) && (!strncmp(argv[3], "convert", strlen("convert"))))
-    {
-        convert_endian = 1;
-    }
-    
-	if(stat(argv[1],&stats) < 0)
+	if ((argc - optind < 2) || (argc - optind > 3)) {
+		usage();
+		exit(1);
+	}
+
+	dir = argv[optind];
+	image = argv[optind + 1];
+
+	if (optind + 2 < argc) {
+		if (!strncmp(argv[optind + 2], "convert", strlen("convert")))
+			convert_endian = 1;
+		else {
+			usage();
+			exit(1);
+		}
+	}
+
+	if(stat(dir,&stats) < 0)
 	{
-		fprintf(stderr,"Could not stat %s\n",argv[1]);
+		fprintf(stderr,"Could not stat %s\n",dir);
 		exit(1);
 	}
 	
 	if(!S_ISDIR(stats.st_mode))
 	{
-		fprintf(stderr," %s is not a directory\n",argv[1]);
+		fprintf(stderr," %s is not a directory\n",dir);
 		exit(1);
 	}
 	
