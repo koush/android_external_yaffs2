@@ -40,27 +40,23 @@ char *obj_list[MAX_OBJECTS];
 void process_chunk(unyaffs_callback callback)
 {
 	int out_file, remain, s;
-	char *full_path_name;
+	char full_path_name[PATH_MAX];
 
 	yaffs_PackedTags2 *pt = (yaffs_PackedTags2 *)spare_data;
 	if (pt->t.byteCount == 0xffff)  {	//a new object 
 
-		yaffs_ObjectHeader *oh = (yaffs_ObjectHeader *)malloc(sizeof(yaffs_ObjectHeader));
-		memcpy(oh, chunk_data, sizeof(yaffs_ObjectHeader));
+		yaffs_ObjectHeader oh;
+		memcpy(&oh, chunk_data, sizeof(yaffs_ObjectHeader));
 
-		full_path_name = (char *)malloc(strlen(oh->name) + strlen(obj_list[oh->parentObjectId]) + 2);
-		if (full_path_name == NULL) {
-			perror("malloc full path name\n");
-		}
-		strcpy(full_path_name, obj_list[oh->parentObjectId]);
+		strcpy(full_path_name, obj_list[oh.parentObjectId]);
 		strcat(full_path_name, "/");
-		strcat(full_path_name, oh->name);
+		strcat(full_path_name, oh.name);
 		obj_list[pt->t.objectId] = full_path_name;
 
-		switch(oh->type) {
+		switch(oh.type) {
 			case YAFFS_OBJECT_TYPE_FILE:
-				remain = oh->fileSize;
-				out_file = creat(full_path_name, oh->yst_mode);
+				remain = oh.fileSize;
+				out_file = creat(full_path_name, oh.yst_mode);
 				while(remain > 0) {
 					if (read_chunk())
 						return -1;
@@ -72,23 +68,23 @@ void process_chunk(unyaffs_callback callback)
 				close(out_file);
 				break;
 			case YAFFS_OBJECT_TYPE_SYMLINK:
-				symlink(oh->alias, full_path_name);
+				symlink(oh.alias, full_path_name);
 				break;
 			case YAFFS_OBJECT_TYPE_DIRECTORY:
 				mkdir(full_path_name, 0777);
 				break;
 			case YAFFS_OBJECT_TYPE_HARDLINK:
-				link(obj_list[oh->equivalentObjectId], full_path_name);
+				link(obj_list[oh.equivalentObjectId], full_path_name);
 				break;
 		}
         if (callback != NULL)
             callback(full_path_name);
-		lchown(full_path_name, oh->yst_uid, oh->yst_gid);
-		if (oh->type != YAFFS_OBJECT_TYPE_SYMLINK)
-			chmod(full_path_name, oh->yst_mode);
+		lchown(full_path_name, oh.yst_uid, oh.yst_gid);
+		if (oh.type != YAFFS_OBJECT_TYPE_SYMLINK)
+			chmod(full_path_name, oh.yst_mode);
 		struct timeval times[2];
-		times[0].tv_sec = oh->yst_atime;
-		times[1].tv_sec = oh->yst_mtime;
+		times[0].tv_sec = oh.yst_atime;
+		times[1].tv_sec = oh.yst_mtime;
 		utimes(full_path_name, times);
 	}
 }
