@@ -30,17 +30,18 @@
 #define MAX_OBJECTS 10000
 #define YAFFS_OBJECTID_ROOT     1
 
+static int read_chunk();
 
-unsigned char data[CHUNK_SIZE + SPARE_SIZE];
-unsigned char *chunk_data = data;
-unsigned char *spare_data = data + CHUNK_SIZE;
-int img_file;
+static unsigned char data[CHUNK_SIZE + SPARE_SIZE];
+static unsigned char *chunk_data = data;
+static unsigned char *spare_data = data + CHUNK_SIZE;
+static int img_file;
 
-char *obj_list[MAX_OBJECTS];
-void process_chunk(unyaffs_callback callback)
+static char *obj_list[MAX_OBJECTS];
+static void process_chunk(unyaffs_callback callback)
 {
 	int out_file, remain, s;
-	char full_path_name[PATH_MAX];
+	char *full_path_name;
 
 	yaffs_PackedTags2 *pt = (yaffs_PackedTags2 *)spare_data;
 	if (pt->t.byteCount == 0xffff)  {	//a new object 
@@ -48,6 +49,10 @@ void process_chunk(unyaffs_callback callback)
 		yaffs_ObjectHeader oh;
 		memcpy(&oh, chunk_data, sizeof(yaffs_ObjectHeader));
 
+		full_path_name = (char *)malloc(strlen(oh.name) + strlen(obj_list[oh.parentObjectId]) + 2);
+		if (full_path_name == NULL) {
+			perror("malloc full path name\n");
+		}
 		strcpy(full_path_name, obj_list[oh.parentObjectId]);
 		strcat(full_path_name, "/");
 		strcat(full_path_name, oh.name);
@@ -59,10 +64,10 @@ void process_chunk(unyaffs_callback callback)
 				out_file = creat(full_path_name, oh.yst_mode);
 				while(remain > 0) {
 					if (read_chunk())
-						return -1;
+						return;
 					s = (remain < pt->t.byteCount) ? remain : pt->t.byteCount;	
 					if (write(out_file, chunk_data, s) == -1)
-						return -1;
+						return;
 					remain -= s;
 				}
 				close(out_file);
@@ -90,7 +95,7 @@ void process_chunk(unyaffs_callback callback)
 }
 
 
-int read_chunk()
+static int read_chunk()
 {
 	ssize_t s;
 	int ret = -1;
@@ -116,6 +121,7 @@ int unyaffs(char* filename, char* directory, unyaffs_callback callback)
         return 1;
 	}
 
+	memset(obj_list, sizeof(char*) * MAX_OBJECTS, 0);
 	obj_list[YAFFS_OBJECTID_ROOT] = ".";
     int count = 0;
     char pwd[PATH_MAX];
@@ -132,6 +138,16 @@ int unyaffs(char* filename, char* directory, unyaffs_callback callback)
     if (directory != NULL) 
         chdir(pwd);
 	close(img_file);
+	int i;
+	for (i = 0; i < MAX_OBJECTS; i++)
+	{
+		if (i == YAFFS_OBJECTID_ROOT)
+			continue;
+		if (obj_list[i] != NULL) {
+			free(obj_list[i]);
+			obj_list[i] = NULL;
+		}
+	}
 	return 0;
 }
 
